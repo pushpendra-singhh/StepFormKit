@@ -17,7 +17,7 @@ StepFormKit is a flexible and reusable Angular package for building complex, mul
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/step-form-kit.git
+   git clone https://github.com/pushpendra-singhh/StepFormKit.git
    ```
 
 2. Install dependencies:
