@@ -1,0 +1,138 @@
+<div class="step-form-container" *ngIf="formConfig" [ngClass]="formConfig.theme || 'light'" [ngStyle]="formConfig.customStyles">
+  <h1>{{ formConfig.title }}</h1>
+  
+  <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="progressPercentage" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress" [style.width.%]="progressPercentage"></div>
+  </div>
+  <div class="progress-text">{{ progressPercentage }}% Complete</div>
+
+  <div class="step-indicator">
+    <div *ngFor="let step of formConfig.steps; let i = index" 
+         class="step" 
+         [class.active]="i === currentStepIndex"
+         [class.completed]="i < currentStepIndex"
+         [attr.aria-current]="i === currentStepIndex ? 'step' : null">
+      {{ step.title }}
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" #formContainer>
+    <ng-container *ngFor="let step of formConfig.steps; let i = index">
+      <div *ngIf="i === currentStepIndex && isStepVisible(step)"
+           [@stepTransition]
+           class="step-content">
+        <h2>{{ step.title }}</h2>
+        <p class="step-description">{{ step.description }}</p>
+        
+        <ng-container formGroupName="{{ step.id }}">
+          <ng-container *ngFor="let field of step.fields">
+            <div class="form-field" *ngIf="isFieldVisible(field)">
+              <label [for]="field.name">{{ field.label }}</label>
+              
+              <ng-container [ngSwitch]="field.type">
+                <input *ngSwitchCase="'text'" 
+                       [type]="field.type"
+                       [id]="field.name"
+                       [formControlName]="field.name"
+                       [required]="field.required"
+                       [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                       [placeholder]="field.placeholder || ''"
+                       [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                       [attr.aria-describedby]="field.name + '-error'">
+                
+                <input *ngSwitchCase="'number'" 
+                       type="number"
+                       [id]="field.name"
+                       [formControlName]="field.name"
+                       [required]="field.required"
+                       [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                       [placeholder]="field.placeholder || ''"
+                       [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                       [attr.aria-describedby]="field.name + '-error'">
+                
+                <input *ngSwitchCase="'email'" 
+                       type="email"
+                       [id]="field.name"
+                       [formControlName]="field.name"
+                       [required]="field.required"
+                       [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                       [placeholder]="field.placeholder || ''"
+                       [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                       [attr.aria-describedby]="field.name + '-error'">
+                
+                <select *ngSwitchCase="'select'"
+                        [id]="field.name"
+                        [formControlName]="field.name"
+                        [required]="field.required"
+                        [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                        [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                        [attr.aria-describedby]="field.name + '-error'">
+                  <option value="">Select an option</option>
+                  <option *ngFor="let option of field.options" [value]="option.value">{{ option.label }}</option>
+                </select>
+                
+                <div *ngSwitchCase="'checkbox'" class="checkbox-field">
+                  <input type="checkbox"
+                         [id]="field.name"
+                         [formControlName]="field.name"
+                         [required]="field.required"
+                         [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                         [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                         [attr.aria-describedby]="field.name + '-error'">
+                  <label [for]="field.name">{{ field.label }}</label>
+                </div>
+                
+                <div *ngSwitchCase="'radio'" class="radio-group">
+                  <fieldset>
+                    <legend>{{ field.label }}</legend>
+                    <div *ngFor="let option of field.options" class="radio-option">
+                      <input type="radio"
+                             [id]="field.name + '-' + option.value"
+                             [formControlName]="field.name"
+                             [value]="option.value"
+                             [required]="field.required"
+                             [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                             [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                             [attr.aria-describedby]="field.name + '-error'">
+                      <label [for]="field.name + '-' + option.value">{{ option.label }}</label>
+                    </div>
+                  </fieldset>
+                </div>
+                
+                <input *ngSwitchCase="'date'" 
+                       type="date"
+                       [id]="field.name"
+                       [formControlName]="field.name"
+                       [required]="field.required"
+                       [attr.disabled]="!isFieldEditable(field) ? '' : null"
+                       [attr.aria-invalid]="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)"
+                       [attr.aria-describedby]="field.name + '-error'">
+
+                <ng-container *ngSwitchCase="'custom'">
+                  <ng-container *ngComponentOutlet="field.customComponent; injector: createInjector(field, step)"></ng-container>
+                </ng-container>
+              </ng-container>
+              
+              <div *ngIf="form.get(step.id)?.get(field.name)?.invalid && (form.get(step.id)?.get(field.name)?.dirty || form.get(step.id)?.get(field.name)?.touched)" 
+                   class="error-message" 
+                   [id]="field.name + '-error'" 
+                   role="alert">
+                {{ getErrorMessage(field, form.get(step.id)?.get(field.name)?.errors) }}
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <div class="form-navigation">
+      <button type="button" (click)="previousStep()" [disabled]="currentStepIndex === 0">Previous</button>
+      <button type="button" (click)="nextStep()" *ngIf="currentStepIndex < formConfig.steps.length - 1">Next</button>
+      <button type="submit" *ngIf="currentStepIndex === formConfig.steps.length - 1" [disabled]="!form.valid">{{ formConfig.submitButtonText || 'Submit' }}</button>
+    </div>
+
+    <div *ngIf="loading" class="loading-indicator" aria-live="polite">Loading...</div>
+    <div *ngIf="apiError" class="error-message" aria-live="assertive">{{ apiError }}</div>
+    <div *ngIf="formSubmitted" class="success-message" aria-live="polite">Form submitted successfully!</div>
+  </form>
+</div>

@@ -1,0 +1,23 @@
+<div [formGroup]="formGroup">
+  <h2>{{ stepConfig.title }}</h2>
+  <ng-container *ngFor="let field of stepConfig.fields">
+    <div class="form-field" *ngIf="isFieldVisible(field)">
+      <label [for]="field.name">{{ field.label }}</label>
+      <input
+        [id]="field.name"
+        [type]="field.type"
+        [formControlName]="field.name"
+        [required]="field.required"
+        [attr.disabled]="!isFieldEditable(field) ? '' : null"
+        [attr.aria-invalid]="formGroup.get(field.name)?.invalid && (formGroup.get(field.name)?.dirty || formGroup.get(field.name)?.touched)"
+        [attr.aria-describedby]="field.name + '-error'"
+      >
+      <div *ngIf="formGroup.get(field.name)?.invalid && (formGroup.get(field.name)?.dirty || formGroup.get(field.name)?.touched)" 
+           class="error-message" 
+           [id]="field.name + '-error'" 
+           role="alert">
+        {{ field.errorMessage }}
+      </div>
+    </div>
+  </ng-container>
+</div>
