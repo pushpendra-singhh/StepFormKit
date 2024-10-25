@@ -22,7 +22,7 @@ StepFormKit is a flexible and reusable Angular package for building complex, mul
 
 2. Install dependencies:
    ```
-   cd step-form-kit
+   cd StepFormKit
    npm install
    ```
 
